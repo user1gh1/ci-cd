@@ -1,0 +1,25 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Decode PEM key and set permissions
+        run: |
+          echo "${{ secrets.SSH_KEY_B64 }}" | base64 -d > key.pem
+          chmod 600 key.pem
+
+      - name: Deploy over SSH
+        run: |
+          ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+            cd /home/ubuntu/animania/staging-animania-back/
+            yarn install
+            yarn build
+            pm2 restart animania-back-staging
+          EOF

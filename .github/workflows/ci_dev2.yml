@@ -1,0 +1,41 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Decode PEM key and set permissions
+        id: decode_key
+        run: |
+          echo "${{ secrets.SSH_KEY_B64 }}" | base64 -d > key.pem
+          chmod 600 key.pem
+
+      # - name: SSH - Navigate to project folder
+      #   id: ssh_cd
+      #   run: |
+      #     ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+      #       "cd /home/ubuntu/padc-academy/dev-academy/padc-academy-back-save"
+      - name: SSH - Install dependencies
+        id: ssh_yarn_install
+        run: |
+          ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+            "cd /home/ubuntu/padc-academy/dev-academy/padc-academy-back-save && npm i"
+        #yarn i
+
+      - name: SSH - Build project
+        id: ssh_yarn_build
+        run: |
+          ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+            "cd /home/ubuntu/padc-academy/dev-academy/padc-academy-back-save && npm build"
+        #yarn build
+      - name: SSH - Restart PM2
+        id: ssh_pm2_restart
+        run: |
+          ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+            "pm2 restart animania-back-staging"
