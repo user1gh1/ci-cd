@@ -32,7 +32,7 @@ jobs:
         id: ssh_yarn_build
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            "cd /home/ubuntu/padc-academy/dev-academy/padc-academy-back-save && npm build"
+            "cd /home/ubuntu/padc-academy/dev-academy/padc-academy-back-save && npm run build"
         #yarn build
       - name: SSH - Restart PM2
         id: ssh_pm2_restart
